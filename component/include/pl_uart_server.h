@@ -39,7 +39,9 @@ public:
   /// @return error code
   esp_err_t SetPort (std::shared_ptr<UartPort> port);
 
-  // Set the task parameters
+  /// @brief Set the server task parameters
+  /// @param taskParameters task parameters
+  /// @return error code
   esp_err_t SetTaskParameters (const TaskParameters& taskParameters);
 
 protected:
