@@ -13,6 +13,14 @@ dependencies:
     path: component
     git: https://github.com/plasmapper/uart-esp-cpp.git
 ```
+Add this to the source code:
+```C++
+#include "pl_uart.h"
+```
+Add `extern "C"` to `app_main` in `main.cpp`:
+```C++
+extern "C" void app_main(void) {...}
+```
 
 ## Features
 1. UART port class.
