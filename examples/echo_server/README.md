@@ -1,4 +1,4 @@
-# UART echo server example
+# UART Echo Server Example
 
 1. UartEchoServer class inherits UartServer class and overrides HandleRequest method to implement echo functionality.
 2. UART0 is initialized.
