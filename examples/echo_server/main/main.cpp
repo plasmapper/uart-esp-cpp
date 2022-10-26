@@ -5,6 +5,8 @@
 class UartEchoServer : public PL::UartServer {
 public:
   using PL::UartServer::UartServer;
+
+protected:
   esp_err_t HandleRequest (PL::UartPort& port) override;
 };
 
