@@ -12,7 +12,7 @@ namespace PL {
 /// @brief UART server class
 class UartServer : public Server {
 public:
-  /// @brief Default UART server task parameters
+  /// @brief Default server task parameters
   static const TaskParameters defaultTaskParameters;
 
   /// @brief Create an UART server
