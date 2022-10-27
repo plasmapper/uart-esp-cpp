@@ -82,30 +82,16 @@ std::shared_ptr<UartPort> UartServer::GetPort() {
 
 esp_err_t UartServer::SetPort (std::shared_ptr<UartPort> port) {
   LockGuard lg (*this);
-  if (status == Status::stopped) {
-    this->port = port;
-    return ESP_OK;
-  }    
-  else {
-    PL_RETURN_ON_ERROR (Disable());
-    this->port = port;
-    return Enable();
-  }
+  this->port = port;
+  return RestartIfEnabled();
 }
 
 //==============================================================================
 
 esp_err_t UartServer::SetTaskParameters (const TaskParameters& taskParameters) {
   LockGuard lg (*this);
-  if (status == Status::stopped) {
-    this->taskParameters = taskParameters;
-    return ESP_OK;
-  }  
-  else {
-    PL_RETURN_ON_ERROR (Disable());
-    this->taskParameters = taskParameters;
-    return Enable();
-  }
+  this->taskParameters = taskParameters;
+  return RestartIfEnabled();
 }
 
 //==============================================================================
@@ -129,6 +115,15 @@ void UartServer::TaskCode (void* parameters) {
   server.disabledEvent.Generate();
 
   vTaskDelete (NULL);
+}
+
+//==============================================================================
+
+esp_err_t UartServer::RestartIfEnabled() {
+  if (status == Status::stopped)
+    return ESP_OK;
+  PL_RETURN_ON_ERROR (Disable());
+  return Enable();
 }
 
 //==============================================================================

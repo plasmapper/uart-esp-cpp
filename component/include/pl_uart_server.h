@@ -57,6 +57,8 @@ private:
   TaskParameters taskParameters = defaultTaskParameters;
 
   static void TaskCode (void* parameters);
+
+  esp_err_t RestartIfEnabled(); 
 };
 
 //==============================================================================
