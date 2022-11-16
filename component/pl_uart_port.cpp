@@ -51,14 +51,14 @@ esp_err_t UartPort::Lock (TickType_t timeout) {
     return ESP_OK;
   if (error == ESP_ERR_TIMEOUT && timeout == 0)
     return ESP_ERR_TIMEOUT;
-  ESP_RETURN_ON_ERROR (error, TAG, "lock uart port failed");
+  ESP_RETURN_ON_ERROR (error, TAG, "uart port lock failed");
   return ESP_OK;
 }
 
 //==============================================================================
 
 esp_err_t UartPort::Unlock() {
-  ESP_RETURN_ON_ERROR (mutex.Unlock(), TAG, "unlock uart port failed");
+  ESP_RETURN_ON_ERROR (mutex.Unlock(), TAG, "uart port unlock failed");
   return ESP_OK;
 }
 
