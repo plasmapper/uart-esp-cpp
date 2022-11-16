@@ -56,11 +56,11 @@ esp_err_t UartServer::Enable() {
   status = Status::starting;
   if (xTaskCreatePinnedToCore (TaskCode, GetName().c_str(), taskParameters.stackDepth, this, taskParameters.priority, NULL, taskParameters.coreId) != pdPASS) {
     status = Status::stopped;
-    ESP_RETURN_ON_ERROR (ESP_FAIL, TAG, "uart server create task failed");
+    ESP_RETURN_ON_ERROR (ESP_FAIL, TAG, "create uart server task failed");
   }
   while (status == Status::starting)
     vTaskDelay(1);
-  ESP_RETURN_ON_FALSE (status == Status::started, ESP_FAIL, TAG, "uart server enable failed");
+  ESP_RETURN_ON_FALSE (status == Status::started, ESP_FAIL, TAG, "enable uart server failed");
   return ESP_OK;
 }
 
@@ -74,7 +74,7 @@ esp_err_t UartServer::Disable() {
   status = Status::stopping;
   while (status == Status::stopping)
     vTaskDelay(1);
-  ESP_RETURN_ON_FALSE (status == Status::stopped, ESP_FAIL, TAG, "uart server disable failed");
+  ESP_RETURN_ON_FALSE (status == Status::stopped, ESP_FAIL, TAG, "disable uart server failed");
   return ESP_OK;
 }
 
