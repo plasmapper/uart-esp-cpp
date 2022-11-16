@@ -1,4 +1,9 @@
 #include "pl_uart_server.h"
+#include "esp_check.h"
+
+//==============================================================================
+
+static const char* TAG = "pl_uart_server";
 
 //==============================================================================
 
@@ -25,13 +30,20 @@ UartServer::~UartServer() {
 //==============================================================================
 
 esp_err_t UartServer::Lock (TickType_t timeout) {
-  return mutex.Lock (timeout);
+  esp_err_t error = mutex.Lock (timeout);
+  if (error == ESP_OK)
+    return ESP_OK;
+  if (error == ESP_ERR_TIMEOUT && timeout == 0)
+    return ESP_ERR_TIMEOUT;
+  ESP_RETURN_ON_ERROR (error, TAG, "lock uart server failed");
+  return ESP_OK;
 }
 
 //==============================================================================
 
 esp_err_t UartServer::Unlock() {
-  return mutex.Unlock();
+  ESP_RETURN_ON_ERROR (mutex.Unlock(), TAG, "unlock uart server failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -44,11 +56,12 @@ esp_err_t UartServer::Enable() {
   status = Status::starting;
   if (xTaskCreatePinnedToCore (TaskCode, GetName().c_str(), taskParameters.stackDepth, this, taskParameters.priority, NULL, taskParameters.coreId) != pdPASS) {
     status = Status::stopped;
-    return ESP_FAIL;
+    ESP_RETURN_ON_ERROR (ESP_FAIL, TAG, "uart server create task failed");
   }
   while (status == Status::starting)
     vTaskDelay(1);
-  return (status == Status::started)?(ESP_OK):(ESP_FAIL);
+  ESP_RETURN_ON_FALSE (status == Status::started, ESP_FAIL, TAG, "uart server enable failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -61,7 +74,8 @@ esp_err_t UartServer::Disable() {
   status = Status::stopping;
   while (status == Status::stopping)
     vTaskDelay(1);
-  return (status == Status::stopped)?(ESP_OK):(ESP_FAIL);
+  ESP_RETURN_ON_FALSE (status == Status::stopped, ESP_FAIL, TAG, "uart server disable failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -83,7 +97,8 @@ std::shared_ptr<UartPort> UartServer::GetPort() {
 esp_err_t UartServer::SetPort (std::shared_ptr<UartPort> port) {
   LockGuard lg (*this);
   this->port = port;
-  return RestartIfEnabled();
+  ESP_RETURN_ON_ERROR (RestartIfEnabled(), TAG, "restart uart server failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -91,7 +106,8 @@ esp_err_t UartServer::SetPort (std::shared_ptr<UartPort> port) {
 esp_err_t UartServer::SetTaskParameters (const TaskParameters& taskParameters) {
   LockGuard lg (*this);
   this->taskParameters = taskParameters;
-  return RestartIfEnabled();
+  ESP_RETURN_ON_ERROR (RestartIfEnabled(), TAG, "restart uart server failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -122,8 +138,9 @@ void UartServer::TaskCode (void* parameters) {
 esp_err_t UartServer::RestartIfEnabled() {
   if (status == Status::stopped)
     return ESP_OK;
-  PL_RETURN_ON_ERROR (Disable());
-  return Enable();
+  ESP_RETURN_ON_ERROR (Disable(), TAG, "disable uart server failed");
+  ESP_RETURN_ON_ERROR (Enable(), TAG, "enable uart server failed");
+  return ESP_OK;
 }
 
 //==============================================================================

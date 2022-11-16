@@ -1,5 +1,10 @@
 #include "pl_uart_port.h"
+#include "esp_check.h"
 #include <map>
+
+//==============================================================================
+
+static const char* TAG = "pl_uart_port";
 
 //==============================================================================
 
@@ -41,13 +46,20 @@ UartPort::~UartPort() {
 //==============================================================================
 
 esp_err_t UartPort::Lock (TickType_t timeout) {
-  return mutex.Lock (timeout);
+  esp_err_t error = mutex.Lock (timeout);
+  if (error == ESP_OK)
+    return ESP_OK;
+  if (error == ESP_ERR_TIMEOUT && timeout == 0)
+    return ESP_ERR_TIMEOUT;
+  ESP_RETURN_ON_ERROR (error, TAG, "lock uart port failed");
+  return ESP_OK;
 }
 
 //==============================================================================
 
 esp_err_t UartPort::Unlock() {
-  return mutex.Unlock();
+  ESP_RETURN_ON_ERROR (mutex.Unlock(), TAG, "unlock uart port failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -56,10 +68,10 @@ esp_err_t UartPort::Initialize() {
   LockGuard lg (*this);
   if (uart_is_driver_installed (port))
     return ESP_OK;
-  PL_RETURN_ON_ERROR (SetConfiguration());
-  PL_RETURN_ON_ERROR (uart_set_pin (port, txPin, rxPin, rtsPin, ctsPin));
-  PL_RETURN_ON_ERROR (uart_driver_install (port, rxBufferSize, txBufferSize, 0, NULL, 0));
-  PL_RETURN_ON_ERROR (uart_set_mode (port, mode));
+  ESP_RETURN_ON_ERROR (SetConfiguration(), TAG, "uart port set configuration failed");
+  ESP_RETURN_ON_ERROR (uart_set_pin (port, txPin, rxPin, rtsPin, ctsPin), TAG, "uart port set pins failed");
+  ESP_RETURN_ON_ERROR (uart_driver_install (port, rxBufferSize, txBufferSize, 0, NULL, 0), TAG, "uart port driver install failed");
+  ESP_RETURN_ON_ERROR (uart_set_mode (port, mode), TAG, "uart port set mode failed");
   return ESP_OK;
 }
 
@@ -67,8 +79,7 @@ esp_err_t UartPort::Initialize() {
 
 esp_err_t UartPort::Enable() {
   LockGuard lg (*this);
-  if (!uart_is_driver_installed (port))
-    return ESP_ERR_INVALID_STATE;
+  ESP_RETURN_ON_FALSE (uart_is_driver_installed (port), ESP_ERR_INVALID_STATE, TAG, "uart port is not initialized");
   if (enabled)
     return ESP_OK;
   enabled = true; 
@@ -81,8 +92,7 @@ esp_err_t UartPort::Enable() {
 
 esp_err_t UartPort::Disable() {
   LockGuard lg (*this);
-  if (!uart_is_driver_installed (port))
-    return ESP_ERR_INVALID_STATE;
+  ESP_RETURN_ON_FALSE (uart_is_driver_installed (port), ESP_ERR_INVALID_STATE, TAG, "uart port is not initialized");
   if (!enabled)
     return ESP_OK;
   enabled = false;
@@ -94,33 +104,31 @@ esp_err_t UartPort::Disable() {
 
 esp_err_t UartPort::EnableLoopback() {
   LockGuard lg (*this);
-  if (!uart_is_driver_installed (port))
-    return ESP_ERR_INVALID_STATE;
-  return uart_set_loop_back (port, true);
+  ESP_RETURN_ON_FALSE (uart_is_driver_installed (port), ESP_ERR_INVALID_STATE, TAG, "uart port is not initialized");
+  ESP_RETURN_ON_ERROR (uart_set_loop_back (port, true), TAG, "uart port enable loopback failed");
+  return ESP_OK;
 }
 
 //==============================================================================
 
 esp_err_t UartPort::DisableLoopback() {
   LockGuard lg (*this);
-  if (!uart_is_driver_installed (port))
-    return ESP_ERR_INVALID_STATE;
-  return uart_set_loop_back (port, false);
+  ESP_RETURN_ON_FALSE (uart_is_driver_installed (port), ESP_ERR_INVALID_STATE, TAG, "uart port is not initialized");
+  ESP_RETURN_ON_ERROR (uart_set_loop_back (port, false), TAG, "uart port disable loopback failed");
+  return ESP_OK;
 }
 
 //==============================================================================
 
 esp_err_t UartPort::Read (void* dest, size_t size) {
   LockGuard lg (*this);
-  if (!enabled)
-    return ESP_ERR_INVALID_STATE;
-
+  ESP_RETURN_ON_FALSE (enabled, ESP_ERR_INVALID_STATE, TAG, "uart port is not enabled");
   if (!size)
     return ESP_OK;
   
   uint32_t baudrate;
   TickType_t totalTimeout = readTimeout;
-  PL_RETURN_ON_ERROR (uart_get_baudrate (port, &baudrate));
+  ESP_RETURN_ON_ERROR (uart_get_baudrate (port, &baudrate), TAG, "uart port get baudrate failed");
   if (baudrate)
     totalTimeout += (size * 1000 * 11) / baudrate / portTICK_PERIOD_MS;
 
@@ -131,21 +139,21 @@ esp_err_t UartPort::Read (void* dest, size_t size) {
     uint8_t data;
     for (; size && (res = uart_read_bytes (port, &data, 1, totalTimeout)) == 1; size--);
   }
-
-  return (res < 0)?(ESP_FAIL):((size)?(ESP_ERR_TIMEOUT):(ESP_OK));
+  ESP_RETURN_ON_FALSE (res >= 0, ESP_FAIL, TAG, "uart port read bytes failed");
+  ESP_RETURN_ON_FALSE (size == 0, ESP_ERR_TIMEOUT, TAG, "uart port read timeout");
+  return ESP_OK;
 }
 
 //==============================================================================
 
 esp_err_t UartPort::Write (const void* src, size_t size) {
   LockGuard lg (*this);
-  if (!enabled)
-    return ESP_ERR_INVALID_STATE;
+  ESP_RETURN_ON_FALSE (enabled, ESP_ERR_INVALID_STATE, TAG, "uart port is not enabled");
   if (!size)
     return ESP_OK;
-  if (!src)
-    return ESP_ERR_INVALID_ARG;
-  return ((uart_write_bytes (port, src, size) > 0)?(ESP_OK):(ESP_FAIL));
+  ESP_RETURN_ON_FALSE (src, ESP_ERR_INVALID_ARG, TAG, "src is null");
+  ESP_RETURN_ON_FALSE (uart_write_bytes (port, src, size) > 0, ESP_FAIL, TAG, "uart port write bytes failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -191,11 +199,10 @@ uint32_t UartPort::GetBaudRate() {
 
 esp_err_t UartPort::SetBaudRate (uint32_t baudRate) {
   LockGuard lg (*this);
-  if (baudRate != 0)
-    this->baudRate = baudRate;
-  else
-    return ESP_ERR_INVALID_ARG;
-  return SetConfiguration();
+  ESP_RETURN_ON_FALSE (baudRate, ESP_ERR_INVALID_ARG, TAG, "invalid baud rate (%d)", baudRate);
+  this->baudRate = baudRate;
+  ESP_RETURN_ON_ERROR (SetConfiguration(), TAG, "uart port set configuration failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -210,11 +217,10 @@ uint16_t UartPort::GetDataBits() {
 esp_err_t UartPort::SetDataBits (uint16_t dataBits) {
   LockGuard lg (*this);
   auto iterator = dataBitsMap.find (dataBits);
-  if (iterator != dataBitsMap.end())
-    this->dataBits = dataBits;
-  else
-    return ESP_ERR_INVALID_ARG;
-  return SetConfiguration();
+  ESP_RETURN_ON_FALSE (iterator != dataBitsMap.end(), ESP_ERR_INVALID_ARG, TAG, "invalid data bits (%d)", dataBits);
+  this->dataBits = dataBits;
+  ESP_RETURN_ON_ERROR (SetConfiguration(), TAG, "uart port set configuration failed");
+  return ESP_OK;
 }
   
 //==============================================================================
@@ -229,11 +235,10 @@ UartParity UartPort::GetParity() {
 esp_err_t UartPort::SetParity (UartParity parity) {
   LockGuard lg (*this);
   auto iterator = parityMap.find (parity);
-  if (iterator != parityMap.end())
-    this->parity = parity;
-  else
-    return ESP_ERR_INVALID_ARG;
-  return SetConfiguration();
+  ESP_RETURN_ON_FALSE (iterator != parityMap.end(), ESP_ERR_INVALID_ARG, TAG, "invalid parity (%d)", (int)parity);
+  this->parity = parity;
+  ESP_RETURN_ON_ERROR (SetConfiguration(), TAG, "uart port set configuration failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -248,11 +253,10 @@ UartStopBits UartPort::GetStopBits() {
 esp_err_t UartPort::SetStopBits (UartStopBits stopBits) {
   LockGuard lg (*this);
   auto iterator = stopBitsMap.find (stopBits);
-  if (iterator != stopBitsMap.end())
-    this->stopBits = stopBits;
-  else
-    return ESP_ERR_INVALID_ARG;
-  return SetConfiguration();
+  ESP_RETURN_ON_FALSE (iterator != stopBitsMap.end(), ESP_ERR_INVALID_ARG, TAG, "invalid stop bits (%d)", (int)stopBits);
+  this->stopBits = stopBits;
+  ESP_RETURN_ON_ERROR (SetConfiguration(), TAG, "uart port set configuration failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -267,20 +271,19 @@ UartFlowControl UartPort::GetFlowControl() {
 esp_err_t UartPort::SetFlowControl (UartFlowControl flowControl) {
   LockGuard lg (*this);
   auto iterator = flowControlMap.find (flowControl);
-  if (iterator != flowControlMap.end())
-    this->flowControl = flowControl;
-  else
-    return ESP_ERR_INVALID_ARG;
-  return SetConfiguration();
+  ESP_RETURN_ON_FALSE (iterator != flowControlMap.end(), ESP_ERR_INVALID_ARG, TAG, "invalid flow control (%d)", (int)flowControl);
+  this->flowControl = flowControl;
+  ESP_RETURN_ON_ERROR (SetConfiguration(), TAG, "uart port set configuration failed");
+  return ESP_OK;
 }
 
 //==============================================================================
 
 esp_err_t UartPort::SetMode (uart_mode_t mode) {
   LockGuard lg (*this);
-  if (!uart_is_driver_installed (port))
-    return ESP_ERR_INVALID_STATE;
-  return uart_set_mode (port, mode);
+  ESP_RETURN_ON_FALSE (uart_is_driver_installed (port), ESP_ERR_INVALID_STATE, TAG, "uart port is not initialized");
+  ESP_RETURN_ON_ERROR (uart_set_mode (port, mode), TAG, "uart set mode failed");
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -293,7 +296,8 @@ esp_err_t UartPort::SetConfiguration() {
   config.parity = parityMap.find (parity)->second;
   config.stop_bits = stopBitsMap.find (stopBits)->second;
   config.flow_ctrl = flowControlMap.find (flowControl)->second;
-  return (uart_param_config (port, &config));
+  ESP_RETURN_ON_ERROR (uart_param_config (port, &config), TAG, "uart set parameters failed");
+  return ESP_OK;
 }
 
 //==============================================================================

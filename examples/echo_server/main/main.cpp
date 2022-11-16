@@ -36,8 +36,8 @@ extern "C" void app_main(void) {
 esp_err_t UartEchoServer::HandleRequest (PL::UartPort& port) {
   uint8_t dataByte;
   while (port.GetReadableSize()) {
-    PL_RETURN_ON_ERROR (port.Read (&dataByte, 1));
-    PL_RETURN_ON_ERROR (port.Write (&dataByte, 1));
+    if (port.Read (&dataByte, 1) == ESP_OK)
+      port.Write (&dataByte, 1);
   }
   return ESP_OK;
 }
