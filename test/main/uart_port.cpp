@@ -5,6 +5,7 @@
 
 const uart_port_t portNumber = UART_NUM_1;
 const uint32_t baudRate = 19200;
+const uint16_t dataBits = 7;
 const PL::UartParity parity = PL::UartParity::even;
 const PL::UartStopBits stopBits = PL::UartStopBits::two;
 const PL::UartFlowControl flowControl = PL::UartFlowControl::rtsCts;
@@ -30,6 +31,8 @@ void TestUartPort() {
   
   TEST_ASSERT (port.SetBaudRate (baudRate) == ESP_OK);
   TEST_ASSERT_EQUAL (baudRate, port.GetBaudRate());
+  TEST_ASSERT (port.SetDataBits (dataBits) == ESP_OK);
+  TEST_ASSERT_EQUAL (dataBits, port.GetDataBits());
   TEST_ASSERT (port.SetParity (parity) == ESP_OK);
   TEST_ASSERT_EQUAL (parity, port.GetParity());
   TEST_ASSERT (port.SetStopBits (stopBits) == ESP_OK);
