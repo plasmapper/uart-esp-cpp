@@ -57,6 +57,9 @@ private:
   TaskParameters taskParameters = defaultTaskParameters;
 
   static void TaskCode (void* parameters);
+  bool handlingRequest = false;
+  bool disableFromRequest = false;
+  bool enableFromRequest = false;
 
   esp_err_t RestartIfEnabled(); 
 };

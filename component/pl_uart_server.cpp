@@ -50,9 +50,13 @@ esp_err_t UartServer::Unlock() {
 
 esp_err_t UartServer::Enable() {
   LockGuard lg (*this);
+  if (handlingRequest) {
+    enableFromRequest = true;
+    return ESP_OK;
+  }
   if (status == Status::started)
     return ESP_OK;
-  
+
   status = Status::starting;
   if (xTaskCreatePinnedToCore (TaskCode, GetName().c_str(), taskParameters.stackDepth, this, taskParameters.priority, NULL, taskParameters.coreId) != pdPASS) {
     status = Status::stopped;
@@ -68,9 +72,13 @@ esp_err_t UartServer::Enable() {
 
 esp_err_t UartServer::Disable() {
   LockGuard lg (*this);
+  if (handlingRequest) {
+    disableFromRequest = true;
+    return ESP_OK;
+  }
   if (status == Status::stopped)
     return ESP_OK;
-
+  
   status = Status::stopping;
   while (status == Status::stopping)
     vTaskDelay(1);
@@ -118,15 +126,23 @@ void UartServer::TaskCode (void* parameters) {
   server.status = Status::started;
   server.enabledEvent.Generate();
 
-  while (server.status != Status::stopping) {
+  while (server.status != Status::stopping && !server.disableFromRequest) {
     if (server.Lock(0) == ESP_OK) {
       LockGuard lg (*server.port);
-      if (server.port->GetReadableSize())
+      if (server.port->GetReadableSize()) {
+        server.handlingRequest = true;
         server.HandleRequest(*server.port);
+        server.handlingRequest = false;
+        if (server.enableFromRequest)
+          server.disableFromRequest = false;
+        server.enableFromRequest = false;
+      }        
       server.Unlock();
     }
     vTaskDelay(1);
   }
+
+  server.disableFromRequest = false;
   server.status = Status::stopped;
   server.disabledEvent.Generate();
 
