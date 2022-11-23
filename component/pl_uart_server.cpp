@@ -15,7 +15,7 @@ const TaskParameters UartServer::defaultTaskParameters = {4096, tskIDLE_PRIORITY
 
 //==============================================================================
 
-UartServer::UartServer (std::shared_ptr<UartPort> port) : port (port) {}
+UartServer::UartServer (std::shared_ptr<Uart> uart) : uart (uart) {}
 
 //==============================================================================
 
@@ -95,16 +95,16 @@ bool UartServer::IsEnabled() {
 
 //==============================================================================
 
-std::shared_ptr<UartPort> UartServer::GetPort() {
+std::shared_ptr<Uart> UartServer::GetUart() {
   LockGuard lg (*this);
-  return port;
+  return uart;
 }
 
 //==============================================================================
 
-esp_err_t UartServer::SetPort (std::shared_ptr<UartPort> port) {
+esp_err_t UartServer::SetUart (std::shared_ptr<Uart> uart) {
   LockGuard lg (*this);
-  this->port = port;
+  this->uart = uart;
   ESP_RETURN_ON_ERROR (RestartIfEnabled(), TAG, "restart failed");
   return ESP_OK;
 }
@@ -128,10 +128,10 @@ void UartServer::TaskCode (void* parameters) {
 
   while (server.status != Status::stopping && !server.disableFromRequest) {
     if (server.Lock(0) == ESP_OK) {
-      LockGuard lg (*server.port);
-      if (server.port->GetReadableSize()) {
+      LockGuard lg (*server.uart);
+      if (server.uart->GetReadableSize()) {
         server.handlingRequest = true;
-        server.HandleRequest(*server.port);
+        server.HandleRequest(*server.uart);
         server.handlingRequest = false;
         if (server.enableFromRequest)
           server.disableFromRequest = false;

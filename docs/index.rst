@@ -10,10 +10,10 @@ UART Component
 Features
 --------
 
-1. :cpp:class:`PL::UartPort` - a :cpp:class:`PL::HardwareInterface` and :cpp:class:`PL::Stream` implementation for ESP internal UART ports.
-   :cpp:func:`PL::UartPort::Initialize` installs the UART port driver. :cpp:func:`PL::UartPort::Enable` enables the port (discarding the incoming data).
+1. :cpp:class:`PL::Uart` - a :cpp:class:`PL::HardwareInterface` and :cpp:class:`PL::Stream` implementation for ESP internal UART ports.
+   :cpp:func:`PL::Uart::Initialize` installs the UART driver. :cpp:func:`PL::Uart::Enable` enables the port (discarding the incoming data).
    A number of Get And Set methods get and set UART port parameters.
-   A number of :cpp:func:`PL::UartPort::Read` and :cpp:func:`PL::UartPort::Write` functions read and write from/to the port.
+   A number of :cpp:func:`PL::Uart::Read` and :cpp:func:`PL::Uart::Write` functions read and write from/to the port.
    Reading and writing to/from :cpp:class:`PL::Buffer` object checks the data size and locks the object so these methods can
    be used in multithreaded applications. 
 2. :cpp:class:`PL::UartServer` - a :cpp:class:`PL::Server` implementation for ESP internal UART ports. The descendant class should override
@@ -22,7 +22,7 @@ Features
 
 Examples
 --------
-| `UART port <https://github.com/plasmapper/uart-esp-cpp/tree/main/examples/port>`_
+| `UART <https://github.com/plasmapper/uart-esp-cpp/tree/main/examples/uart>`_
 | `UART echo server <https://github.com/plasmapper/uart-esp-cpp/tree/main/examples/echo_server>`_
 
 API reference
@@ -31,5 +31,5 @@ API reference
 .. toctree::
   
   api/types      
-  api/uart_port
+  api/uart
   api/uart_server

@@ -15,18 +15,18 @@ static const char* TAG = "pl_uart_server_test";
 //==============================================================================
 
 void TestUartServer() {
-  auto port1 = std::make_shared<PL::UartPort>(port1Number);
-  TEST_ASSERT (port1->Initialize() == ESP_OK);
-  TEST_ASSERT (port1->EnableLoopback() == ESP_OK);
-  TEST_ASSERT (port1->Enable() == ESP_OK);
+  auto uart1 = std::make_shared<PL::Uart>(port1Number);
+  TEST_ASSERT (uart1->Initialize() == ESP_OK);
+  TEST_ASSERT (uart1->EnableLoopback() == ESP_OK);
+  TEST_ASSERT (uart1->Enable() == ESP_OK);
   
-  auto port2 = std::make_shared<PL::UartPort>(port2Number);
-  TEST_ASSERT (port2->Initialize() == ESP_OK);
-  TEST_ASSERT (port2->EnableLoopback() == ESP_OK);
-  TEST_ASSERT (port2->Enable() == ESP_OK);
+  auto uart2 = std::make_shared<PL::Uart>(port2Number);
+  TEST_ASSERT (uart2->Initialize() == ESP_OK);
+  TEST_ASSERT (uart2->EnableLoopback() == ESP_OK);
+  TEST_ASSERT (uart2->Enable() == ESP_OK);
 
-  UartServer server(port1);
-  TEST_ASSERT (port1 == server.GetPort());
+  UartServer server(uart1);
+  TEST_ASSERT (uart1 == server.GetUart());
 
   TEST_ASSERT (server.Enable() == ESP_OK);
   TEST_ASSERT (server.IsEnabled());
@@ -37,8 +37,8 @@ void TestUartServer() {
 
   for (int i = 0; i < sizeof (dataToSend); i++)
     receivedData[i] = 0;
-  TEST_ASSERT (server.SetPort (port2) == ESP_OK);
-  TEST_ASSERT (port2 == server.GetPort());
+  TEST_ASSERT (server.SetUart (uart2) == ESP_OK);
+  TEST_ASSERT (uart2 == server.GetUart());
   TEST_ASSERT_EQUAL (sizeof (dataToSend), uart_write_bytes (port2Number, dataToSend, sizeof (dataToSend)));
   vTaskDelay (10);
   for (int i = 0; i < sizeof (dataToSend); i++)
@@ -62,8 +62,8 @@ void TestUartServer() {
 
 //==============================================================================
 
-esp_err_t UartServer::HandleRequest (PL::UartPort& port) {
-  ESP_RETURN_ON_ERROR (port.Read (receivedData, sizeof (receivedData)), TAG, "port read failed");
+esp_err_t UartServer::HandleRequest (PL::Uart& uart) {
+  ESP_RETURN_ON_ERROR (uart.Read (receivedData, sizeof (receivedData)), TAG, "port read failed");
   if (receivedData[0] == disableDataToSend[0])
     ESP_RETURN_ON_ERROR (Disable(), TAG, "server disable failed");
   if (receivedData[0] == restartDataToSend[0]) {

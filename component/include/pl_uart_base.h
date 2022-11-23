@@ -9,8 +9,8 @@ namespace PL {
 
 //==============================================================================
 
-/// @brief UART port class
-class UartPort : public HardwareInterface, public Stream {
+/// @brief UART class
+class Uart : public HardwareInterface, public Stream {
 public:
   /// @brief Default hardware interface name
   static const std::string defaultName;
@@ -31,7 +31,7 @@ public:
   /// @brief Default mode
   static const uart_mode_t defaultMode = UART_MODE_UART;
 
-  /// @brief Create an UART port
+  /// @brief Create an UART
   /// @param port port number
   /// @param rxBufferSize RX buffer size
   /// @param txBufferSize TX buffer size
@@ -39,11 +39,11 @@ public:
   /// @param rxPin RX pin
   /// @param rtsPin RTS pin
   /// @param ctsPin CTS pin
-  UartPort (uart_port_t port, int rxBufferSize = minBufferSize, int txBufferSize = minBufferSize,
+  Uart (uart_port_t port, int rxBufferSize = minBufferSize, int txBufferSize = minBufferSize,
             int txPin = UART_PIN_NO_CHANGE, int rxPin = UART_PIN_NO_CHANGE, int rtsPin = UART_PIN_NO_CHANGE, int ctsPin = UART_PIN_NO_CHANGE);
-  ~UartPort();
-  UartPort (const UartPort&) = delete;
-  UartPort& operator= (const UartPort&) = delete;
+  ~Uart();
+  Uart (const Uart&) = delete;
+  Uart& operator= (const Uart&) = delete;
   
   esp_err_t Lock (TickType_t timeout = portMAX_DELAY) override;
   esp_err_t Unlock() override;

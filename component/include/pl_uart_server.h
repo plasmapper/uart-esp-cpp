@@ -1,7 +1,7 @@
 #pragma once
 #include "pl_common.h"
 #include "pl_uart_types.h"
-#include "pl_uart_port.h"
+#include "pl_uart_base.h"
 
 //==============================================================================
 
@@ -16,8 +16,8 @@ public:
   static const TaskParameters defaultTaskParameters;
 
   /// @brief Create an UART server
-  /// @param port UART port
-  UartServer (std::shared_ptr<UartPort> port);
+  /// @param uart UART
+  UartServer (std::shared_ptr<Uart> uart);
   ~UartServer();
   UartServer (const UartServer&) = delete;
   UartServer& operator= (const UartServer&) = delete;
@@ -30,14 +30,14 @@ public:
 
   bool IsEnabled() override;
 
-  /// @brief Get the UART port
-  /// @return UART port
-  std::shared_ptr<UartPort> GetPort();
+  /// @brief Get the UART
+  /// @return UART
+  std::shared_ptr<Uart> GetUart();
   
-  /// @brief Set the UART port
-  /// @param port UART port
+  /// @brief Set the UART
+  /// @param uart UART
   /// @return error code
-  esp_err_t SetPort (std::shared_ptr<UartPort> port);
+  esp_err_t SetUart (std::shared_ptr<Uart> uart);
 
   /// @brief Set the server task parameters
   /// @param taskParameters task parameters
@@ -46,14 +46,14 @@ public:
 
 protected:
   /// @brief Handle the UART client request
-  /// @param port UART port
+  /// @param uart UART
   /// @return error code
-  virtual esp_err_t HandleRequest (UartPort& port) = 0;
+  virtual esp_err_t HandleRequest (Uart& uart) = 0;
 
 private:
   Mutex mutex;
   enum class Status {stopped, starting, started, stopping} status = Status::stopped;
-  std::shared_ptr<UartPort> port;
+  std::shared_ptr<Uart> uart;
   TaskParameters taskParameters = defaultTaskParameters;
 
   static void TaskCode (void* parameters);
