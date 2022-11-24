@@ -73,6 +73,7 @@ esp_err_t UartServer::Enable() {
 esp_err_t UartServer::Disable() {
   LockGuard lg (*this);
   if (handlingRequest) {
+    enableFromRequest = false;
     disableFromRequest = true;
     return ESP_OK;
   }
