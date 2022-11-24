@@ -152,7 +152,7 @@ void UartServer::TaskCode (void* parameters) {
 //==============================================================================
 
 esp_err_t UartServer::RestartIfEnabled() {
-  if (status == Status::stopped)
+  if (status == Status::stopped || disableFromRequest)
     return ESP_OK;
   ESP_RETURN_ON_ERROR (Disable(), TAG, "disable failed");
   ESP_RETURN_ON_ERROR (Enable(), TAG, "enable failed");
