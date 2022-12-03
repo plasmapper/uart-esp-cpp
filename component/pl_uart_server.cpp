@@ -127,6 +127,8 @@ void UartServer::TaskCode (void* parameters) {
   server.status = Status::started;
   server.enabledEvent.Generate();
 
+  server.uart->Read (NULL, server.uart->GetReadableSize());
+
   while (server.status != Status::stopping && !server.disableFromRequest) {
     if (server.Lock(0) == ESP_OK) {
       LockGuard lg (*server.uart);
