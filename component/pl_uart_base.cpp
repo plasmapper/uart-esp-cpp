@@ -200,7 +200,7 @@ uint32_t Uart::GetBaudRate() {
 
 esp_err_t Uart::SetBaudRate (uint32_t baudRate) {
   LockGuard lg (*this);
-  ESP_RETURN_ON_FALSE (baudRate, ESP_ERR_INVALID_ARG, TAG, "invalid baud rate (%d)", baudRate);
+  ESP_RETURN_ON_FALSE (baudRate, ESP_ERR_INVALID_ARG, TAG, "invalid baud rate (%lu)", baudRate);
   this->baudRate = baudRate;
   ESP_RETURN_ON_ERROR (SetConfiguration(), TAG, "set configuration failed");
   return ESP_OK;
@@ -297,6 +297,8 @@ esp_err_t Uart::SetConfiguration() {
   config.parity = parityMap.find (parity)->second;
   config.stop_bits = stopBitsMap.find (stopBits)->second;
   config.flow_ctrl = flowControlMap.find (flowControl)->second;
+  config.source_clk = UART_SCLK_DEFAULT;
+  
   ESP_RETURN_ON_ERROR (uart_param_config (port, &config), TAG, "set parameters failed");
   return ESP_OK;
 }
