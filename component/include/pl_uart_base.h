@@ -15,7 +15,7 @@ public:
   /// @brief Default hardware interface name
   static const std::string defaultName;
   /// @brief Minimum RX and TX buffer size
-  static const int minBufferSize = SOC_UART_FIFO_LEN + 1;
+  static const int minBufferSize = SOC_UART_FIFO_LEN + 4;
   /// @brief Default operation timeout in FreeRTOS ticks
   static const TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
   /// @brief Default baud rate
