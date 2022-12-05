@@ -55,12 +55,11 @@ private:
   enum class Status {stopped, starting, started, stopping} status = Status::stopped;
   std::shared_ptr<Uart> uart;
   TaskParameters taskParameters = defaultTaskParameters;
-
-  static void TaskCode (void* parameters);
-  bool handlingRequest = false;
+  TaskHandle_t taskHandle = NULL;
   bool disableFromRequest = false;
   bool enableFromRequest = false;
 
+  static void TaskCode (void* parameters);
   esp_err_t RestartIfEnabled(); 
 };
 

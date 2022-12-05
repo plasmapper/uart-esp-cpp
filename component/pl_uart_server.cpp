@@ -50,7 +50,7 @@ esp_err_t UartServer::Unlock() {
 
 esp_err_t UartServer::Enable() {
   LockGuard lg (*this);
-  if (handlingRequest) {
+  if (taskHandle && taskHandle == xTaskGetCurrentTaskHandle()) {
     enableFromRequest = true;
     return ESP_OK;
   }
@@ -58,7 +58,8 @@ esp_err_t UartServer::Enable() {
     return ESP_OK;
 
   status = Status::starting;
-  if (xTaskCreatePinnedToCore (TaskCode, GetName().c_str(), taskParameters.stackDepth, this, taskParameters.priority, NULL, taskParameters.coreId) != pdPASS) {
+  if (xTaskCreatePinnedToCore (TaskCode, GetName().c_str(), taskParameters.stackDepth, this, taskParameters.priority, &taskHandle, taskParameters.coreId) != pdPASS) {
+    taskHandle = NULL;
     status = Status::stopped;
     ESP_RETURN_ON_ERROR (ESP_FAIL, TAG, "task create failed");
   }
@@ -72,7 +73,7 @@ esp_err_t UartServer::Enable() {
 
 esp_err_t UartServer::Disable() {
   LockGuard lg (*this);
-  if (handlingRequest) {
+  if (taskHandle && taskHandle == xTaskGetCurrentTaskHandle()) {
     enableFromRequest = false;
     disableFromRequest = true;
     return ESP_OK;
@@ -130,22 +131,18 @@ void UartServer::TaskCode (void* parameters) {
   server.uart->Read (NULL, server.uart->GetReadableSize());
 
   while (server.status != Status::stopping && !server.disableFromRequest) {
-    if (server.Lock(0) == ESP_OK) {
-      LockGuard lg (*server.uart);
-      if (server.uart->GetReadableSize()) {
-        server.handlingRequest = true;
-        server.HandleRequest(*server.uart);
-        server.handlingRequest = false;
-        if (server.enableFromRequest)
-          server.disableFromRequest = false;
-        server.enableFromRequest = false;
-      }        
-      server.Unlock();
+    auto uart = server.GetUart();
+    if (uart->GetReadableSize()) {
+      server.HandleRequest(*uart);
+      if (server.enableFromRequest)
+        server.disableFromRequest = false;
+      server.enableFromRequest = false;     
     }
     vTaskDelay(1);
   }
 
   server.disableFromRequest = false;
+  server.taskHandle = NULL;
   server.status = Status::stopped;
   server.disabledEvent.Generate();
 
