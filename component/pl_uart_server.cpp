@@ -20,10 +20,9 @@ UartServer::UartServer (std::shared_ptr<Uart> uart) : uart (uart) {}
 //==============================================================================
 
 UartServer::~UartServer() {
-  if (status != Status::stopped) {
-    status = Status::stopping;
-    while (status == Status::stopping)
-      vTaskDelay(1);
+  while (taskHandle) {
+    disable = true;
+    vTaskDelay(1);
   }
 }
 
@@ -50,22 +49,19 @@ esp_err_t UartServer::Unlock() {
 
 esp_err_t UartServer::Enable() {
   LockGuard lg (*this);
-  if (taskHandle && taskHandle == xTaskGetCurrentTaskHandle()) {
+  if (taskHandle == xTaskGetCurrentTaskHandle()) {
     enableFromRequest = true;
     return ESP_OK;
   }
-  if (status == Status::started)
+  if (taskHandle)
     return ESP_OK;
-
-  status = Status::starting;
+  
+  disable = false;
   if (xTaskCreatePinnedToCore (TaskCode, GetName().c_str(), taskParameters.stackDepth, this, taskParameters.priority, &taskHandle, taskParameters.coreId) != pdPASS) {
     taskHandle = NULL;
-    status = Status::stopped;
     ESP_RETURN_ON_ERROR (ESP_FAIL, TAG, "task create failed");
   }
-  while (status == Status::starting)
-    vTaskDelay(1);
-  ESP_RETURN_ON_FALSE (status == Status::started, ESP_FAIL, TAG, "enable failed");
+  enabledEvent.Generate();
   return ESP_OK;
 }
 
@@ -73,18 +69,16 @@ esp_err_t UartServer::Enable() {
 
 esp_err_t UartServer::Disable() {
   LockGuard lg (*this);
-  if (taskHandle && taskHandle == xTaskGetCurrentTaskHandle()) {
+  if (taskHandle == xTaskGetCurrentTaskHandle()) {
     enableFromRequest = false;
     disableFromRequest = true;
     return ESP_OK;
   }
-  if (status == Status::stopped)
-    return ESP_OK;
   
-  status = Status::stopping;
-  while (status == Status::stopping)
+  while (taskHandle) {
+    disable = true;
     vTaskDelay(1);
-  ESP_RETURN_ON_FALSE (status == Status::stopped, ESP_FAIL, TAG, "disable failed");
+  }
   return ESP_OK;
 }
 
@@ -92,7 +86,7 @@ esp_err_t UartServer::Disable() {
 
 bool UartServer::IsEnabled() {
   LockGuard lg (*this);
-  return status == Status::started;
+  return taskHandle;
 }
 
 //==============================================================================
@@ -124,38 +118,44 @@ esp_err_t UartServer::SetTaskParameters (const TaskParameters& taskParameters) {
 
 void UartServer::TaskCode (void* parameters) {
   UartServer& server = *(UartServer*)parameters;
+  bool firstRun = true;
 
-  server.status = Status::started;
-  server.enabledEvent.Generate();
-
-  server.uart->Read (NULL, server.uart->GetReadableSize());
-
-  while (server.status != Status::stopping && !server.disableFromRequest) {
+  while (!server.disable) {
     if (server.Lock(0) == ESP_OK) {
-      auto uart = server.uart;
-      server.Unlock();
-      if (uart->GetReadableSize()) {
-        server.HandleRequest(*uart);
+      Uart& uart = *server.GetUart();
+      LockGuard lg (uart);
+
+      if (firstRun) {
+        firstRun = false;
+        uart.Read (NULL, uart.GetReadableSize());
+      }
+
+      if (uart.GetReadableSize()) {
+        server.HandleRequest(uart);
         if (server.enableFromRequest)
           server.disableFromRequest = false;
-        server.enableFromRequest = false;     
+        server.enableFromRequest = false;
       }
+
+      if (server.disableFromRequest) {
+        server.disableFromRequest = false;
+        server.disable = true;
+      }
+
+      server.Unlock();
     }
     vTaskDelay(1);
   }
 
-  server.disableFromRequest = false;
-  server.taskHandle = NULL;
-  server.status = Status::stopped;
   server.disabledEvent.Generate();
-
+  server.taskHandle = NULL;
   vTaskDelete (NULL);
 }
 
 //==============================================================================
 
 esp_err_t UartServer::RestartIfEnabled() {
-  if (status == Status::stopped || disableFromRequest)
+  if (!taskHandle || disableFromRequest)
     return ESP_OK;
   ESP_RETURN_ON_ERROR (Disable(), TAG, "disable failed");
   ESP_RETURN_ON_ERROR (Enable(), TAG, "enable failed");

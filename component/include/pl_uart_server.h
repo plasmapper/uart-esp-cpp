@@ -52,10 +52,10 @@ protected:
 
 private:
   Mutex mutex;
-  enum class Status {stopped, starting, started, stopping} status = Status::stopped;
   std::shared_ptr<Uart> uart;
   TaskParameters taskParameters = defaultTaskParameters;
   TaskHandle_t taskHandle = NULL;
+  bool disable = false;
   bool disableFromRequest = false;
   bool enableFromRequest = false;
 
