@@ -131,12 +131,15 @@ void UartServer::TaskCode (void* parameters) {
   server.uart->Read (NULL, server.uart->GetReadableSize());
 
   while (server.status != Status::stopping && !server.disableFromRequest) {
-    auto uart = server.GetUart();
-    if (uart->GetReadableSize()) {
-      server.HandleRequest(*uart);
-      if (server.enableFromRequest)
-        server.disableFromRequest = false;
-      server.enableFromRequest = false;     
+    if (server.Lock(0) == ESP_OK) {
+      auto uart = server.uart;
+      server.Unlock();
+      if (uart->GetReadableSize()) {
+        server.HandleRequest(*uart);
+        if (server.enableFromRequest)
+          server.disableFromRequest = false;
+        server.enableFromRequest = false;     
+      }
     }
     vTaskDelay(1);
   }
