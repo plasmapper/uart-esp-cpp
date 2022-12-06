@@ -74,11 +74,14 @@ esp_err_t UartServer::Disable() {
     disableFromRequest = true;
     return ESP_OK;
   }
+  if (!taskHandle)
+    return ESP_OK;
   
   while (taskHandle) {
     disable = true;
     vTaskDelay(1);
   }
+  disabledEvent.Generate();
   return ESP_OK;
 }
 
@@ -123,23 +126,29 @@ void UartServer::TaskCode (void* parameters) {
   while (!server.disable) {
     if (server.Lock(0) == ESP_OK) {
       Uart& uart = *server.GetUart();
-      LockGuard lg (uart);
 
       if (firstRun) {
+        LockGuard lg (uart);
         firstRun = false;
         uart.Read (NULL, uart.GetReadableSize());
       }
-
-      if (uart.GetReadableSize()) {
-        server.HandleRequest(uart);
-        if (server.enableFromRequest)
-          server.disableFromRequest = false;
-        server.enableFromRequest = false;
+      else {
+        LockGuard lg (uart);
+        if (uart.GetReadableSize())
+          server.HandleRequest(uart);
       }
+
+      if (server.enableFromRequest)
+        server.disableFromRequest = false;
+      server.enableFromRequest = false;
 
       if (server.disableFromRequest) {
         server.disableFromRequest = false;
-        server.disable = true;
+        server.disabledEvent.Generate();
+        server.taskHandle = NULL;
+        server.Unlock();
+        vTaskDelete (NULL);
+        return;
       }
 
       server.Unlock();
@@ -147,7 +156,6 @@ void UartServer::TaskCode (void* parameters) {
     vTaskDelay(1);
   }
 
-  server.disabledEvent.Generate();
   server.taskHandle = NULL;
   vTaskDelete (NULL);
 }
