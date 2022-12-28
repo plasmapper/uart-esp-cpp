@@ -128,7 +128,6 @@ esp_err_t Uart::Read (void* dest, size_t size) {
   ESP_RETURN_ON_FALSE (enabled, ESP_ERR_INVALID_STATE, TAG, "uart port is not enabled");
   if (!size)
     return ESP_OK;
-  bool flush = (size == SIZE_MAX);
   
   uint32_t baudrate;
   TickType_t totalTimeout = readTimeout;
@@ -137,14 +136,14 @@ esp_err_t Uart::Read (void* dest, size_t size) {
     totalTimeout += (size * 1000 * 11) / baudrate / portTICK_PERIOD_MS;
 
   int res;
-  if (dest)
+  if (dest && size != SIZE_MAX)
     size -= (res = uart_read_bytes (port, dest, size, totalTimeout));
   else {
     uint8_t data;
-    for (; size && (res = uart_read_bytes (port, &data, 1, totalTimeout)) == 1; size--); 
+    for (; size && (res = uart_read_bytes (port, &data, 1, readTimeout)) == 1; size--); 
   }
   ESP_RETURN_ON_FALSE (res >= 0, ESP_FAIL, TAG, "read bytes failed");
-  ESP_RETURN_ON_FALSE (flush || size == 0, ESP_ERR_TIMEOUT, TAG, "timeout");
+  ESP_RETURN_ON_FALSE (size == 0 || size == SIZE_MAX, ESP_ERR_TIMEOUT, TAG, "timeout");
   return ESP_OK;
 }
 
