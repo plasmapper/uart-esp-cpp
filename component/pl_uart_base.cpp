@@ -129,21 +129,15 @@ esp_err_t Uart::Read (void* dest, size_t size) {
   if (!size)
     return ESP_OK;
   
-  uint32_t baudrate;
-  TickType_t totalTimeout = readTimeout;
-  ESP_RETURN_ON_ERROR (uart_get_baudrate (port, &baudrate), TAG, "get baudrate failed");
-  if (baudrate)
-    totalTimeout += (size * 1000 * 11) / baudrate / portTICK_PERIOD_MS;
-
   int res;
-  if (dest && size != SIZE_MAX)
-    size -= (res = uart_read_bytes (port, dest, size, totalTimeout));
+  if (dest)
+    size -= (res = uart_read_bytes (port, dest, size, readTimeout));
   else {
     uint8_t data;
     for (; size && (res = uart_read_bytes (port, &data, 1, readTimeout)) == 1; size--); 
   }
   ESP_RETURN_ON_FALSE (res >= 0, ESP_FAIL, TAG, "read bytes failed");
-  ESP_RETURN_ON_FALSE (size == 0 || size == SIZE_MAX, ESP_ERR_TIMEOUT, TAG, "timeout");
+  ESP_RETURN_ON_FALSE (size == 0, ESP_ERR_TIMEOUT, TAG, "timeout");
   return ESP_OK;
 }
 
