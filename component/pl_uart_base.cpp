@@ -129,7 +129,7 @@ esp_err_t Uart::Read (void* dest, size_t size) {
   if (!size)
     return ESP_OK;
   
-  int res;
+  int res = 0;
   if (dest)
     size -= (res = uart_read_bytes (port, dest, size, readTimeout));
   else {
