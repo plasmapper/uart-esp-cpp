@@ -3,7 +3,7 @@ UART Component
 
 .. |COMPONENT| replace:: uart
 
-.. |VERSION| replace:: 1.0.0
+.. |VERSION| replace:: 1.0.1
 
 .. include:: ../../../installation.rst
 
@@ -24,8 +24,8 @@ Features
 
 Examples
 --------
-| `UART <https://github.com/plasmapper/uart-esp-cpp/tree/main/examples/uart>`_
-| `UART echo server <https://github.com/plasmapper/uart-esp-cpp/tree/main/examples/echo_server>`_
+| `UART <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.0.1/examples/uart>`_
+| `UART echo server <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.0.1/examples/uart_echo_server>`_
 
 API reference
 -------------

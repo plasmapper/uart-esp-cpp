@@ -1,4 +1,4 @@
-version: "1.0.0"
+version: "1.0.1"
 license: "MIT"
 description: UART and UART server C++ class component for ESP-IDF
 url: https://github.com/plasmapper/uart-esp-cpp
