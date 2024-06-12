@@ -3,6 +3,8 @@ UART Component
 
 .. |COMPONENT| replace:: uart
 
+.. |VERSION| replace:: 1.0.0
+
 .. include:: ../../../installation.rst
 
 .. include:: ../../../sdkconfig_common.rst

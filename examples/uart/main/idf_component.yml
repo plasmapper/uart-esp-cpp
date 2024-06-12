@@ -1,0 +1,2 @@
+dependencies:
+  plasmapper/pl_uart: "^1.0.0"
