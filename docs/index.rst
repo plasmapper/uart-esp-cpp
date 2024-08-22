@@ -3,6 +3,8 @@ UART Component
 
 .. |COMPONENT| replace:: uart
 
+.. |ESP_IDF_VERSION| replace:: 5.0
+   
 .. |VERSION| replace:: 1.0.1
 
 .. include:: ../../../installation.rst
