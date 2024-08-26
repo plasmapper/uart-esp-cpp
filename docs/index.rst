@@ -24,6 +24,13 @@ Features
    :cpp:func:`PL::UartServer::HandleRequest` to handle the client request. :cpp:func:`PL::UartServer::HandleRequest` is only called when the UART port is enabled
    and there is incoming data in the internal buffer.
 
+Thread safety
+-------------
+
+Class method thread safety is implemented by having the :cpp:class:`PL::Lockable` as a base class and creating the class object lock guard at the beginning of the methods.
+
+:cpp:class:`PL::UartServer` task method locks both the :cpp:class:`PL::UartServer` and the :cpp:class:`PL::Uart` objects for the duration of the transaction. 
+
 Examples
 --------
 | `UART <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.0.1/examples/uart>`_
