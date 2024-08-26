@@ -16,61 +16,61 @@ static const char* TAG = "pl_uart_server_test";
 
 void TestUartServer() {
   auto uart1 = std::make_shared<PL::Uart>(port1Number);
-  TEST_ASSERT (uart1->Initialize() == ESP_OK);
-  TEST_ASSERT (uart1->EnableLoopback() == ESP_OK);
-  TEST_ASSERT (uart1->Enable() == ESP_OK);
+  TEST_ASSERT(uart1->Initialize() == ESP_OK);
+  TEST_ASSERT(uart1->EnableLoopback() == ESP_OK);
+  TEST_ASSERT(uart1->Enable() == ESP_OK);
   
   auto uart2 = std::make_shared<PL::Uart>(port2Number);
-  TEST_ASSERT (uart2->Initialize() == ESP_OK);
-  TEST_ASSERT (uart2->EnableLoopback() == ESP_OK);
-  TEST_ASSERT (uart2->Enable() == ESP_OK);
+  TEST_ASSERT(uart2->Initialize() == ESP_OK);
+  TEST_ASSERT(uart2->EnableLoopback() == ESP_OK);
+  TEST_ASSERT(uart2->Enable() == ESP_OK);
 
   UartServer server(uart1);
-  TEST_ASSERT (uart1 == server.GetUart());
+  TEST_ASSERT(uart1 == server.GetUart());
 
-  TEST_ASSERT (server.Enable() == ESP_OK);
-  vTaskDelay (10);
-  TEST_ASSERT (server.IsEnabled());
-  TEST_ASSERT_EQUAL (sizeof (dataToSend), uart_write_bytes (port1Number, dataToSend, sizeof (dataToSend)));
-  vTaskDelay (10);
-  for (int i = 0; i < sizeof (dataToSend); i++)
-    TEST_ASSERT_EQUAL (dataToSend[i], receivedData[i]);
+  TEST_ASSERT(server.Enable() == ESP_OK);
+  vTaskDelay(10);
+  TEST_ASSERT(server.IsEnabled());
+  TEST_ASSERT_EQUAL(sizeof(dataToSend), uart_write_bytes(port1Number, dataToSend, sizeof(dataToSend)));
+  vTaskDelay(10);
+  for (int i = 0; i < sizeof(dataToSend); i++)
+    TEST_ASSERT_EQUAL(dataToSend[i], receivedData[i]);
 
-  for (int i = 0; i < sizeof (dataToSend); i++)
+  for (int i = 0; i < sizeof(dataToSend); i++)
     receivedData[i] = 0;
-  TEST_ASSERT (server.SetUart (uart2) == ESP_OK);
-  vTaskDelay (10);
-  TEST_ASSERT (uart2 == server.GetUart());
-  TEST_ASSERT_EQUAL (sizeof (dataToSend), uart_write_bytes (port2Number, dataToSend, sizeof (dataToSend)));
-  vTaskDelay (10);
-  for (int i = 0; i < sizeof (dataToSend); i++)
-    TEST_ASSERT_EQUAL (dataToSend[i], receivedData[i]);
+  TEST_ASSERT(server.SetUart(uart2) == ESP_OK);
+  vTaskDelay(10);
+  TEST_ASSERT(uart2 == server.GetUart());
+  TEST_ASSERT_EQUAL(sizeof(dataToSend), uart_write_bytes(port2Number, dataToSend, sizeof(dataToSend)));
+  vTaskDelay(10);
+  for (int i = 0; i < sizeof(dataToSend); i++)
+    TEST_ASSERT_EQUAL(dataToSend[i], receivedData[i]);
 
   // Test server disable and restart from request
-  TEST_ASSERT_EQUAL (sizeof (disableDataToSend), uart_write_bytes (port2Number, disableDataToSend, sizeof (disableDataToSend)));
-  vTaskDelay (10);
-  TEST_ASSERT (!server.IsEnabled());
+  TEST_ASSERT_EQUAL(sizeof(disableDataToSend), uart_write_bytes(port2Number, disableDataToSend, sizeof(disableDataToSend)));
+  vTaskDelay(10);
+  TEST_ASSERT(!server.IsEnabled());
   
-  TEST_ASSERT (server.Enable() == ESP_OK);
-  TEST_ASSERT (server.IsEnabled());
+  TEST_ASSERT(server.Enable() == ESP_OK);
+  TEST_ASSERT(server.IsEnabled());
 
-  TEST_ASSERT_EQUAL (sizeof (restartDataToSend), uart_write_bytes (port2Number, restartDataToSend, sizeof (restartDataToSend)));
-  vTaskDelay (10);
-  TEST_ASSERT (server.IsEnabled());
+  TEST_ASSERT_EQUAL(sizeof(restartDataToSend), uart_write_bytes(port2Number, restartDataToSend, sizeof(restartDataToSend)));
+  vTaskDelay(10);
+  TEST_ASSERT(server.IsEnabled());
   
-  TEST_ASSERT (server.Disable() == ESP_OK);
-  TEST_ASSERT (!server.IsEnabled());
+  TEST_ASSERT(server.Disable() == ESP_OK);
+  TEST_ASSERT(!server.IsEnabled());
 }
 
 //==============================================================================
 
-esp_err_t UartServer::HandleRequest (PL::Uart& uart) {
-  ESP_RETURN_ON_ERROR (uart.Read (receivedData, sizeof (receivedData)), TAG, "port read failed");
+esp_err_t UartServer::HandleRequest(PL::Uart& uart) {
+  ESP_RETURN_ON_ERROR(uart.Read(receivedData, sizeof(receivedData)), TAG, "port read failed");
   if (receivedData[0] == disableDataToSend[0])
-    ESP_RETURN_ON_ERROR (Disable(), TAG, "server disable failed");
+    ESP_RETURN_ON_ERROR(Disable(), TAG, "server disable failed");
   if (receivedData[0] == restartDataToSend[0]) {
-    ESP_RETURN_ON_ERROR (Disable(), TAG, "server disable failed");
-    ESP_RETURN_ON_ERROR (Enable(), TAG, "server enable failed");
+    ESP_RETURN_ON_ERROR(Disable(), TAG, "server disable failed");
+    ESP_RETURN_ON_ERROR(Enable(), TAG, "server enable failed");
   }
   return ESP_OK;
 }

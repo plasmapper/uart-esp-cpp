@@ -15,14 +15,14 @@ public:
   /// @brief Default server task parameters
   static const TaskParameters defaultTaskParameters;
 
-  /// @brief Create an UART server
+  /// @brief Creates an UART server
   /// @param uart UART
-  UartServer (std::shared_ptr<Uart> uart);
+  UartServer(std::shared_ptr<Uart> uart);
   ~UartServer();
-  UartServer (const UartServer&) = delete;
-  UartServer& operator= (const UartServer&) = delete;
+  UartServer(const UartServer&) = delete;
+  UartServer& operator=(const UartServer&) = delete;
 
-  esp_err_t Lock (TickType_t timeout = portMAX_DELAY) override;
+  esp_err_t Lock(TickType_t timeout = portMAX_DELAY) override;
   esp_err_t Unlock() override;
 
   esp_err_t Enable() override;
@@ -30,25 +30,25 @@ public:
 
   bool IsEnabled() override;
 
-  /// @brief Get the UART
+  /// @brief Gets the UART
   /// @return UART
   std::shared_ptr<Uart> GetUart();
   
-  /// @brief Set the UART
+  /// @brief Sets the UART
   /// @param uart UART
   /// @return error code
-  esp_err_t SetUart (std::shared_ptr<Uart> uart);
+  esp_err_t SetUart(std::shared_ptr<Uart> uart);
 
-  /// @brief Set the server task parameters
+  /// @brief Sets the server task parameters
   /// @param taskParameters task parameters
   /// @return error code
-  esp_err_t SetTaskParameters (const TaskParameters& taskParameters);
+  esp_err_t SetTaskParameters(const TaskParameters& taskParameters);
 
 protected:
-  /// @brief Handle the UART client request
+  /// @brief Handles the UART client request
   /// @param uart UART
   /// @return error code
-  virtual esp_err_t HandleRequest (Uart& uart) = 0;
+  virtual esp_err_t HandleRequest(Uart& uart) = 0;
 
 private:
   Mutex mutex;
@@ -59,7 +59,7 @@ private:
   bool disableFromRequest = false;
   bool enableFromRequest = false;
 
-  static void TaskCode (void* parameters);
+  static void TaskCode(void* parameters);
   esp_err_t RestartIfEnabled(); 
 };
 

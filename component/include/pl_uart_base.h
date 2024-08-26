@@ -31,7 +31,7 @@ public:
   /// @brief Default mode
   static const uart_mode_t defaultMode = UART_MODE_UART;
 
-  /// @brief Create an UART
+  /// @brief Creates an UART
   /// @param port port number
   /// @param rxBufferSize RX buffer size
   /// @param txBufferSize TX buffer size
@@ -39,86 +39,86 @@ public:
   /// @param rxPin RX pin
   /// @param rtsPin RTS pin
   /// @param ctsPin CTS pin
-  Uart (uart_port_t port, int rxBufferSize = minBufferSize, int txBufferSize = minBufferSize,
+  Uart(uart_port_t port, int rxBufferSize = minBufferSize, int txBufferSize = minBufferSize,
             int txPin = UART_PIN_NO_CHANGE, int rxPin = UART_PIN_NO_CHANGE, int rtsPin = UART_PIN_NO_CHANGE, int ctsPin = UART_PIN_NO_CHANGE);
   ~Uart();
-  Uart (const Uart&) = delete;
-  Uart& operator= (const Uart&) = delete;
+  Uart(const Uart&) = delete;
+  Uart& operator=(const Uart&) = delete;
   
-  esp_err_t Lock (TickType_t timeout = portMAX_DELAY) override;
+  esp_err_t Lock(TickType_t timeout = portMAX_DELAY) override;
   esp_err_t Unlock() override;
 
   esp_err_t Initialize() override;
   esp_err_t Enable() override;
   esp_err_t Disable() override;
 
-  /// @brief Enable the loopback
+  /// @brief Enables the loopback
   /// @return error code
   esp_err_t EnableLoopback();
 
-  /// @brief Disable the loopback
+  /// @brief Disables the loopback
   /// @return error code
   esp_err_t DisableLoopback();
 
-  esp_err_t Read (void* dest, size_t size) override;
-  esp_err_t Write (const void* src, size_t size) override;
+  esp_err_t Read(void* dest, size_t size) override;
+  esp_err_t Write(const void* src, size_t size) override;
 
   bool IsEnabled() override;
   
   size_t GetReadableSize() override;
 
   TickType_t GetReadTimeout() override;
-  esp_err_t SetReadTimeout (TickType_t timeout) override;
+  esp_err_t SetReadTimeout(TickType_t timeout) override;
 
-  /// @brief Get the baud rate
+  /// @brief Gets the baud rate
   /// @return baud rate
   uint32_t GetBaudRate();
 
-  /// @brief Set the baud rate
+  /// @brief Sets the baud rate
   /// @param baudRate baud rate
   /// @return error code
-  virtual esp_err_t SetBaudRate (uint32_t baudRate);
+  virtual esp_err_t SetBaudRate(uint32_t baudRate);
 
-  /// @brief Get the number of data bits
+  /// @brief Gets the number of data bits
   /// @return number of data bits
   uint16_t GetDataBits();
 
-  /// @brief Set the number of data bits
+  /// @brief Sets the number of data bits
   /// @param dataBits number of data bits
   /// @return error code
-  virtual esp_err_t SetDataBits (uint16_t dataBits);
+  virtual esp_err_t SetDataBits(uint16_t dataBits);
 
-  /// @brief Get the parity
+  /// @brief Gets the parity
   /// @return parity
   UartParity GetParity();
 
-  /// @brief Set the parity
+  /// @brief Sets the parity
   /// @param parity parity
   /// @return error code
-  virtual esp_err_t SetParity (UartParity parity);
+  virtual esp_err_t SetParity(UartParity parity);
 
-  /// @brief Get the number of stop bits
+  /// @brief Gets the number of stop bits
   /// @return number of stop bits
   
   UartStopBits GetStopBits();
   /// @brief Set the number of stop bits
   /// @param stopBits number of stop bits
   /// @return error code
-  virtual esp_err_t SetStopBits (UartStopBits stopBits);
+  virtual esp_err_t SetStopBits(UartStopBits stopBits);
  
-  /// @brief Get the flow control type
+  /// @brief Gets the flow control type
   /// @return flow control type
   UartFlowControl GetFlowControl();
 
-  /// @brief Set the flow control type
+  /// @brief Sets the flow control type
   /// @param flowControl flow control type
   /// @return error code
-  virtual esp_err_t SetFlowControl (UartFlowControl flowControl);
+  virtual esp_err_t SetFlowControl(UartFlowControl flowControl);
 
-  /// @brief Set the mode (UART/IRDA/RS485...)
+  /// @brief Sets the mode (UART/IRDA/RS485...)
   /// @param mode mode
   /// @return error code
-  esp_err_t SetMode (uart_mode_t mode);
+  esp_err_t SetMode(uart_mode_t mode);
 
 private:
   Mutex mutex;

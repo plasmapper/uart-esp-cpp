@@ -6,7 +6,7 @@
 
 extern "C" void app_main(void) {
   UNITY_BEGIN();
-  RUN_TEST (TestUart);
-  RUN_TEST (TestUartServer);
+  RUN_TEST(TestUart);
+  RUN_TEST(TestUartServer);
   UNITY_END();
 }
