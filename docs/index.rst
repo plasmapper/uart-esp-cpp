@@ -5,7 +5,7 @@ UART Component
 
 .. |ESP_IDF_VERSION| replace:: 5.0
    
-.. |VERSION| replace:: 1.0.1
+.. |VERSION| replace:: 1.1.0
 
 .. include:: ../../../installation.rst
 
@@ -20,21 +20,18 @@ Features
    A number of :cpp:func:`PL::Uart::Read` and :cpp:func:`PL::Uart::Write` functions read and write from/to the port.
    Reading and writing to/from :cpp:class:`PL::Buffer` object checks the data size and locks the object so these methods can
    be used in multithreaded applications. 
-2. :cpp:class:`PL::UartServer` - a :cpp:class:`PL::Server` implementation for ESP internal UART ports. The descendant class should override
-   :cpp:func:`PL::UartServer::HandleRequest` to handle the client request. :cpp:func:`PL::UartServer::HandleRequest` is only called when the UART port is enabled
-   and there is incoming data in the internal buffer.
+2. :cpp:class:`PL::StreamServer` can be used with :cpp:class:`PL::Uart` to implement a stream server for ESP internal UART ports. The descendant class should override
+   :cpp:func:`PL::StreamServer::HandleRequest` to handle the client request. :cpp:func:`PL::StreamServer::HandleRequest` is only called when there is incoming data in the internal buffer.
 
 Thread safety
 -------------
 
 Class method thread safety is implemented by having the :cpp:class:`PL::Lockable` as a base class and creating the class object lock guard at the beginning of the methods.
 
-:cpp:class:`PL::UartServer` task method locks both the :cpp:class:`PL::UartServer` and the :cpp:class:`PL::Uart` objects for the duration of the transaction. 
-
 Examples
 --------
-| `UART <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.0.1/examples/uart>`_
-| `UART echo server <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.0.1/examples/uart_echo_server>`_
+| `UART <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.1.0/examples/uart>`_
+| `UART echo server <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.1.0/examples/uart_echo_server>`_
 
 API reference
 -------------
@@ -43,4 +40,3 @@ API reference
   
   api/types      
   api/uart
-  api/uart_server

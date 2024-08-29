@@ -1,2 +1,2 @@
 dependencies:
-  plasmapper/pl_uart: "^1.0.1"
+  plasmapper/pl_uart: "^1.1.0"

@@ -2,12 +2,12 @@
 
 //==============================================================================
 
-class UartEchoServer : public PL::UartServer {
+class UartEchoServer : public PL::StreamServer {
 public:
-  using PL::UartServer::UartServer;
+  using PL::StreamServer::StreamServer;
 
 protected:
-  esp_err_t HandleRequest(PL::Uart& uart) override;
+  esp_err_t HandleRequest(PL::Stream& stream) override;
 };
 
 //==============================================================================
@@ -33,11 +33,11 @@ extern "C" void app_main(void) {
 
 //==============================================================================
 
-esp_err_t UartEchoServer::HandleRequest(PL::Uart& uart) {
+esp_err_t UartEchoServer::HandleRequest(PL::Stream& stream) {
   uint8_t dataByte;
-  while (uart.GetReadableSize()) {
-    if (uart.Read(&dataByte, 1) == ESP_OK)
-      uart.Write(&dataByte, 1);
+  while (stream.GetReadableSize()) {
+    if (stream.Read(&dataByte, 1) == ESP_OK)
+      stream.Write(&dataByte, 1);
   }
   return ESP_OK;
 }

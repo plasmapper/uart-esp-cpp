@@ -1,11 +1,11 @@
-#include "pl_uart.h"
+#include "pl_common.h"
 
 //==============================================================================
 
-class UartServer : public PL::UartServer {
+class UartServer : public PL::StreamServer {
 public:
-  using PL::UartServer::UartServer;
-  esp_err_t HandleRequest(PL::Uart& uart) override;
+  using PL::StreamServer::StreamServer;
+  esp_err_t HandleRequest(PL::Stream& stream) override;
 };
 
 //==============================================================================

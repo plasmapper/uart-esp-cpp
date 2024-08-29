@@ -10,25 +10,14 @@ namespace PL {
 //==============================================================================
 
 /// @brief UART server class
-class UartServer : public Server {
+class [[deprecated("Use more generic StreamServer class instead.")]] UartServer : public StreamServer {
 public:
-  /// @brief Default server task parameters
-  static const TaskParameters defaultTaskParameters;
-
   /// @brief Creates an UART server
   /// @param uart UART
   UartServer(std::shared_ptr<Uart> uart);
   ~UartServer();
   UartServer(const UartServer&) = delete;
   UartServer& operator=(const UartServer&) = delete;
-
-  esp_err_t Lock(TickType_t timeout = portMAX_DELAY) override;
-  esp_err_t Unlock() override;
-
-  esp_err_t Enable() override;
-  esp_err_t Disable() override;
-
-  bool IsEnabled() override;
 
   /// @brief Gets the UART
   /// @return UART
@@ -39,28 +28,16 @@ public:
   /// @return error code
   esp_err_t SetUart(std::shared_ptr<Uart> uart);
 
-  /// @brief Sets the server task parameters
-  /// @param taskParameters task parameters
-  /// @return error code
-  esp_err_t SetTaskParameters(const TaskParameters& taskParameters);
-
 protected:
+  esp_err_t HandleRequest(PL::Stream& stream) override;
+
   /// @brief Handles the UART client request
   /// @param uart UART
   /// @return error code
   virtual esp_err_t HandleRequest(Uart& uart) = 0;
 
 private:
-  Mutex mutex;
   std::shared_ptr<Uart> uart;
-  TaskParameters taskParameters = defaultTaskParameters;
-  TaskHandle_t taskHandle = NULL;
-  bool disable = false;
-  bool disableFromRequest = false;
-  bool enableFromRequest = false;
-
-  static void TaskCode(void* parameters);
-  esp_err_t RestartIfEnabled(); 
 };
 
 //==============================================================================

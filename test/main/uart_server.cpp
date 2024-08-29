@@ -1,3 +1,4 @@
+#include "uart_base.h"
 #include "uart_server.h"
 #include "unity.h"
 #include "esp_check.h"
@@ -26,7 +27,7 @@ void TestUartServer() {
   TEST_ASSERT(uart2->Enable() == ESP_OK);
 
   UartServer server(uart1);
-  TEST_ASSERT(uart1 == server.GetUart());
+  TEST_ASSERT(uart1 == server.GetStream());
 
   TEST_ASSERT(server.Enable() == ESP_OK);
   vTaskDelay(10);
@@ -38,9 +39,9 @@ void TestUartServer() {
 
   for (int i = 0; i < sizeof(dataToSend); i++)
     receivedData[i] = 0;
-  TEST_ASSERT(server.SetUart(uart2) == ESP_OK);
+  TEST_ASSERT(server.SetStream(uart2) == ESP_OK);
   vTaskDelay(10);
-  TEST_ASSERT(uart2 == server.GetUart());
+  TEST_ASSERT(uart2 == server.GetStream());
   TEST_ASSERT_EQUAL(sizeof(dataToSend), uart_write_bytes(port2Number, dataToSend, sizeof(dataToSend)));
   vTaskDelay(10);
   for (int i = 0; i < sizeof(dataToSend); i++)
@@ -64,8 +65,8 @@ void TestUartServer() {
 
 //==============================================================================
 
-esp_err_t UartServer::HandleRequest(PL::Uart& uart) {
-  ESP_RETURN_ON_ERROR(uart.Read(receivedData, sizeof(receivedData)), TAG, "port read failed");
+esp_err_t UartServer::HandleRequest(PL::Stream& stream) {
+  ESP_RETURN_ON_ERROR(stream.Read(receivedData, sizeof(receivedData)), TAG, "port read failed");
   if (receivedData[0] == disableDataToSend[0])
     ESP_RETURN_ON_ERROR(Disable(), TAG, "server disable failed");
   if (receivedData[0] == restartDataToSend[0]) {
