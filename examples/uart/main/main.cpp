@@ -14,5 +14,5 @@ extern "C" void app_main(void) {
   uart.Enable();
 
   char testData[] = "Test\n";
-  uart.Write(testData, sizeof(testData));
+  uart.Write(testData, sizeof(testData) - 1);
 }
