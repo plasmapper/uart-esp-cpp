@@ -130,8 +130,11 @@ esp_err_t Uart::Read(void* dest, size_t size) {
   if (dest)
     size -= (res = uart_read_bytes(port, dest, size, readTimeout));
   else {
+    TickType_t startTick = xTaskGetTickCount();
+    TickType_t elapsedTicks = 0;
     uint8_t data;
-    for (; size && (res = uart_read_bytes(port, &data, 1, readTimeout)) == 1; size--); 
+    for (; size && (res = uart_read_bytes(port, &data, 1, elapsedTicks < readTimeout ? readTimeout - elapsedTicks : 0)) == 1;
+      size--, elapsedTicks = xTaskGetTickCount() - startTick);
   }
   ESP_RETURN_ON_FALSE(res >= 0, ESP_FAIL, TAG, "read bytes failed");
   ESP_RETURN_ON_FALSE(size == 0, ESP_ERR_TIMEOUT, TAG, "timeout");
