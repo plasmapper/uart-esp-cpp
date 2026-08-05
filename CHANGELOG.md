@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Read timeout compounding when discarding data.
 - UartServer UART reference not tracking stream set directly through SetStream.
 - Write not verifying that all bytes were written.
+- Read size underflow on read error.
 
 ## [1.1.0] - 2024-08-29
 ### Changed

@@ -127,8 +127,11 @@ esp_err_t Uart::Read(void* dest, size_t size) {
     return ESP_OK;
   
   int res = 0;
-  if (dest)
-    size -= (res = uart_read_bytes(port, dest, size, readTimeout));
+  if (dest) {
+    res = uart_read_bytes(port, dest, size, readTimeout);
+    if (res > 0)
+      size -= res;
+  }
   else {
     TickType_t startTick = xTaskGetTickCount();
     TickType_t elapsedTicks = 0;
