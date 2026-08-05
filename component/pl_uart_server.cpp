@@ -7,7 +7,7 @@ namespace PL {
 
 //==============================================================================
 
-UartServer::UartServer(std::shared_ptr<Uart> uart) : StreamServer(uart), uart(uart) {}
+UartServer::UartServer(std::shared_ptr<Uart> uart) : StreamServer(uart) {}
 
 //==============================================================================
 
@@ -16,15 +16,12 @@ UartServer::~UartServer() {}
 //==============================================================================
 
 std::shared_ptr<Uart> UartServer::GetUart() {
-  LockGuard lg(*this);
-  return uart;
+  return std::static_pointer_cast<Uart>(GetStream());
 }
 
 //==============================================================================
 
 esp_err_t UartServer::SetUart(std::shared_ptr<Uart> uart) {
-  LockGuard lg(*this);
-  this->uart = uart;
   return SetStream(uart);
 }
 

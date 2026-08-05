@@ -35,9 +35,6 @@ protected:
   /// @param uart UART
   /// @return error code
   virtual esp_err_t HandleRequest(Uart& uart) = 0;
-
-private:
-  std::shared_ptr<Uart> uart;
 };
 
 //==============================================================================
