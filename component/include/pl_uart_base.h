@@ -35,7 +35,7 @@ public:
   /// @brief Creates an UART
   /// @param port port number
   /// @param rxBufferSize RX buffer size
-  /// @param txBufferSize TX buffer size
+  /// @param txBufferSize TX buffer size (0 selects blocking, unbuffered TX)
   /// @param txPin TX pin
   /// @param rxPin RX pin
   /// @param rtsPin RTS pin
