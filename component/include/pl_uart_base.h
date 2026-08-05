@@ -17,19 +17,19 @@ public:
   /// @brief Minimum RX and TX buffer size
   static constexpr int minBufferSize = SOC_UART_FIFO_LEN + 4;
   /// @brief Default operation timeout in FreeRTOS ticks
-  static const TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
+  static constexpr TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
   /// @brief Default baud rate
-  static const uint32_t defaultBaudRate = 115200;
+  static constexpr uint32_t defaultBaudRate = 115200;
   /// @brief Default number of data bits
-  static const uint16_t defaultDataBits = 8;
+  static constexpr uint16_t defaultDataBits = 8;
   /// @brief Default parity
-  static const UartParity defaultParity = UartParity::none;
+  static constexpr UartParity defaultParity = UartParity::none;
   /// @brief Default number of stop bits
-  static const UartStopBits defaultStopBits = UartStopBits::one;
+  static constexpr UartStopBits defaultStopBits = UartStopBits::one;
   /// @brief Default flow control type
-  static const UartFlowControl defaultFlowControl = UartFlowControl::none;
+  static constexpr UartFlowControl defaultFlowControl = UartFlowControl::none;
   /// @brief Default mode
-  static const uart_mode_t defaultMode = UART_MODE_UART;
+  static constexpr uart_mode_t defaultMode = UART_MODE_UART;
 
   /// @brief Creates an UART
   /// @param port port number
