@@ -149,7 +149,7 @@ esp_err_t Uart::Write(const void* src, size_t size) {
   if (!size)
     return ESP_OK;
   ESP_RETURN_ON_FALSE(src, ESP_ERR_INVALID_ARG, TAG, "src is null");
-  ESP_RETURN_ON_FALSE(uart_write_bytes(port, src, size) > 0, ESP_FAIL, TAG, "write bytes failed");
+  ESP_RETURN_ON_FALSE(uart_write_bytes(port, src, size) == size, ESP_FAIL, TAG, "write bytes failed");
   return ESP_OK;
 }
 
