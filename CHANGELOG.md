@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UartServer UART reference not tracking stream set directly through SetStream.
 - Write not verifying that all bytes were written.
 - Read size underflow on read error.
+- Declaration and usage of minBufferSize.
 
 ## [1.1.0] - 2024-08-29
 ### Changed
