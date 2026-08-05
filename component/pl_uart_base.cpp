@@ -33,8 +33,8 @@ const std::string Uart::defaultName = "UART";
 
 Uart::Uart(uart_port_t port, int rxBufferSize, int txBufferSize, int txPin, int rxPin, int rtsPin, int ctsPin) :
     port(port), txPin(txPin), rxPin(rxPin), rtsPin(rtsPin), ctsPin(ctsPin) {
-  this->rxBufferSize = (std::max(rxBufferSize, minBufferSize) / 4) * 4;
-  this->txBufferSize = txBufferSize == 0 ? 0 : (std::max(txBufferSize, minBufferSize) / 4) * 4;
+  this->rxBufferSize = std::max((rxBufferSize + 4) / 4 * 4, minBufferSize);
+  this->txBufferSize = txBufferSize == 0 ? 0 : std::max((txBufferSize + 4) / 4 * 4, minBufferSize);
   SetName(defaultName + std::to_string(port - UART_NUM_0));
 }
 

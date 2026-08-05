@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Lock timeout handling.
+- Remaining static const members to constexpr.
+- Buffer size rounding.
 
 ### Fixed
 - Read timeout compounding when discarding data.
@@ -14,9 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Write not verifying that all bytes were written.
 - Read size underflow on read error.
 - Declaration and usage of minBufferSize.
-
-### Changed
-- Remaining static const members to constexpr.
 
 ## [1.1.0] - 2024-08-29
 ### Changed

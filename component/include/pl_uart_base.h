@@ -14,8 +14,9 @@ class Uart : public HardwareInterface, public Stream {
 public:
   /// @brief Default hardware interface name
   static const std::string defaultName;
-  /// @brief Minimum RX and TX buffer size
-  static constexpr int minBufferSize = SOC_UART_FIFO_LEN + 4;
+  /// @brief Minimum RX and TX buffer size (rounded up to a multiple of 4)
+  // The + 3 rounds up instead of down, so the result is never less than SOC_UART_FIFO_LEN + 4.
+  static constexpr int minBufferSize = (SOC_UART_FIFO_LEN + 4 + 3) / 4 * 4;
   /// @brief Default operation timeout in FreeRTOS ticks
   static constexpr TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
   /// @brief Default baud rate
