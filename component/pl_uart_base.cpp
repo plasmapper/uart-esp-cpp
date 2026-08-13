@@ -132,11 +132,17 @@ esp_err_t Uart::Read(void* dest, size_t size) {
       size -= res;
   }
   else {
+    constexpr size_t discardBufferSize = 64;
+    uint8_t discardBuffer[discardBufferSize];
     TickType_t startTick = xTaskGetTickCount();
     TickType_t elapsedTicks = 0;
-    uint8_t data;
-    for (; size && (res = uart_read_bytes(port, &data, 1, elapsedTicks < readTimeout ? readTimeout - elapsedTicks : 0)) == 1;
-      size--, elapsedTicks = xTaskGetTickCount() - startTick);
+    do {
+      res = uart_read_bytes(port, discardBuffer, std::min(size, discardBufferSize), elapsedTicks < readTimeout ? readTimeout - elapsedTicks : 0);
+      if (res > 0) {
+        size -= res;
+        elapsedTicks = xTaskGetTickCount() - startTick;
+      }
+    } while (size && res > 0);
   }
   ESP_RETURN_ON_FALSE(res >= 0, ESP_FAIL, TAG, "read bytes failed");
   ESP_RETURN_ON_FALSE(size == 0, ESP_ERR_TIMEOUT, TAG, "timeout");

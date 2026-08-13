@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Buffer size rounding off-by-one when the requested size is already a multiple of 4.
+- GetStopBits documentation not attaching to the declaration due to a blank line.
+- Discard read performance when discarding data one byte at a time.
 
 ## [1.2.0] - 2026-08-07
 ### Added

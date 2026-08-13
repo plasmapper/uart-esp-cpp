@@ -100,8 +100,8 @@ public:
 
   /// @brief Gets the number of stop bits
   /// @return number of stop bits
-  
   UartStopBits GetStopBits();
+  
   /// @brief Set the number of stop bits
   /// @param stopBits number of stop bits
   /// @return error code
