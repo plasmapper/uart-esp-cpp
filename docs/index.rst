@@ -5,7 +5,7 @@ UART Component
 
 .. |ESP_IDF_VERSION| replace:: 5.0
    
-.. |VERSION| replace:: 1.2.0
+.. |VERSION| replace:: 1.3.0
 
 .. include:: ../../../installation.rst
 
@@ -30,8 +30,8 @@ Class method thread safety is implemented by having the :cpp:class:`PL::Lockable
 
 Examples
 --------
-| `UART <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.2.0/examples/uart>`_
-| `UART echo server <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.2.0/examples/uart_echo_server>`_
+| `UART <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.3.0/examples/uart>`_
+| `UART echo server <https://components.espressif.com/components/plasmapper/pl_uart/versions/1.3.0/examples/uart_echo_server>`_
 
 API reference
 -------------

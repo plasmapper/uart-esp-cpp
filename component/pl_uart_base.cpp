@@ -195,6 +195,18 @@ esp_err_t Uart::SetReadTimeout(TickType_t timeout) {
 
 //==============================================================================
 
+TickType_t Uart::GetWriteTimeout() {
+  return portMAX_DELAY;
+}
+
+//==============================================================================
+
+esp_err_t Uart::SetWriteTimeout(TickType_t timeout) {
+  return ESP_ERR_NOT_SUPPORTED;
+}
+
+//==============================================================================
+
 uint32_t Uart::GetBaudRate() {
   LockGuard lg(*this);
   return baudRate;

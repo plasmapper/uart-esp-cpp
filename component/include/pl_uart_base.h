@@ -71,6 +71,15 @@ public:
   TickType_t GetReadTimeout() override;
   esp_err_t SetReadTimeout(TickType_t timeout) override;
 
+  /// @brief Gets the write operation timeout
+  /// @return always portMAX_DELAY (ESP-IDF uart_write_bytes does not support timeout)
+  TickType_t GetWriteTimeout() override;
+
+  /// @brief Sets the write operation timeout
+  /// @param timeout timeout in FreeRTOS ticks
+  /// @return always ESP_ERR_NOT_SUPPORTED (ESP-IDF uart_write_bytes does not support timeout)
+  esp_err_t SetWriteTimeout(TickType_t timeout) override;
+
   /// @brief Gets the baud rate
   /// @return baud rate
   uint32_t GetBaudRate();
