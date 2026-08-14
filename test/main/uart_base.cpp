@@ -41,8 +41,8 @@ void TestUart() {
   TEST_ASSERT_EQUAL(flowControl, uart.GetFlowControl());
   TEST_ASSERT(uart.SetReadTimeout(timeout) == ESP_OK);
   TEST_ASSERT_EQUAL(timeout, uart.GetReadTimeout());
-  TEST_ASSERT(uart.SetReadTimeout(timeout) == ESP_ERR_NOT_SUPPORTED);
-  TEST_ASSERT_EQUAL(portMAX_DELAY, uart.GetReadTimeout());
+  TEST_ASSERT(uart.SetWriteTimeout(timeout) == ESP_ERR_NOT_SUPPORTED);
+  TEST_ASSERT_EQUAL(portMAX_DELAY, uart.GetWriteTimeout());
 
   TEST_ASSERT(uart.Enable() == ESP_OK);
   TEST_ASSERT(uart.IsEnabled());
