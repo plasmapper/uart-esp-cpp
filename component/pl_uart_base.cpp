@@ -1,8 +1,24 @@
 #include "pl_uart_base.h"
 #include "esp_check.h"
 #include <map>
+#include "hal/uart_hal.h"
 
 //==============================================================================
+
+#if SOC_UART_SUPPORT_WAKEUP_INT
+#define UART_INTR_CONFIG_FLAG ((UART_INTR_RXFIFO_FULL) \
+                            | (UART_INTR_RXFIFO_TOUT) \
+                            | (UART_INTR_RXFIFO_OVF) \
+                            | (UART_INTR_BRK_DET) \
+                            | (UART_INTR_PARITY_ERR) \
+                            | (UART_INTR_WAKEUP))
+#else
+#define UART_INTR_CONFIG_FLAG ((UART_INTR_RXFIFO_FULL) \
+                            | (UART_INTR_RXFIFO_TOUT) \
+                            | (UART_INTR_RXFIFO_OVF) \
+                            | (UART_INTR_BRK_DET) \
+                            | (UART_INTR_PARITY_ERR))
+#endif
 
 static const char* TAG = "pl_uart_base";
 
@@ -67,9 +83,10 @@ esp_err_t Uart::Initialize() {
   LockGuard lg(*this);
   if (uart_is_driver_installed(port))
     return ESP_OK;
-  ESP_RETURN_ON_ERROR(SetConfiguration(), TAG, "set configuration failed");
+  ESP_RETURN_ON_ERROR(ConfigureParameters(), TAG, "configure parameters failed");
   ESP_RETURN_ON_ERROR(uart_set_pin(port, txPin, rxPin, rtsPin, ctsPin), TAG, "set pins failed");
   ESP_RETURN_ON_ERROR(uart_driver_install(port, rxBufferSize, txBufferSize, 0, NULL, 0), TAG, "driver install failed");
+  ESP_RETURN_ON_ERROR(ConfigureInterrupts(), TAG, "configure interrupts failed");
   ESP_RETURN_ON_ERROR(uart_set_mode(port, mode), TAG, "set mode failed");
   return ESP_OK;
 }
@@ -218,7 +235,8 @@ esp_err_t Uart::SetBaudRate(uint32_t baudRate) {
   LockGuard lg(*this);
   ESP_RETURN_ON_FALSE(baudRate, ESP_ERR_INVALID_ARG, TAG, "invalid baud rate (%lu)", baudRate);
   this->baudRate = baudRate;
-  ESP_RETURN_ON_ERROR(SetConfiguration(), TAG, "set configuration failed");
+  ESP_RETURN_ON_ERROR(ConfigureParameters(), TAG, "configure parameters failed");
+  ESP_RETURN_ON_ERROR(ConfigureInterrupts(), TAG, "configure interrupts failed");
   return ESP_OK;
 }
 
@@ -236,7 +254,7 @@ esp_err_t Uart::SetDataBits(uint16_t dataBits) {
   auto iterator = dataBitsMap.find(dataBits);
   ESP_RETURN_ON_FALSE(iterator != dataBitsMap.end(), ESP_ERR_INVALID_ARG, TAG, "invalid data bits (%d)", dataBits);
   this->dataBits = dataBits;
-  ESP_RETURN_ON_ERROR(SetConfiguration(), TAG, "set configuration failed");
+  ESP_RETURN_ON_ERROR(ConfigureParameters(), TAG, "configure parameters failed");
   return ESP_OK;
 }
   
@@ -254,7 +272,7 @@ esp_err_t Uart::SetParity(UartParity parity) {
   auto iterator = parityMap.find(parity);
   ESP_RETURN_ON_FALSE(iterator != parityMap.end(), ESP_ERR_INVALID_ARG, TAG, "invalid parity (%d)", (int)parity);
   this->parity = parity;
-  ESP_RETURN_ON_ERROR(SetConfiguration(), TAG, "set configuration failed");
+  ESP_RETURN_ON_ERROR(ConfigureParameters(), TAG, "configure parameters failed");
   return ESP_OK;
 }
 
@@ -272,7 +290,7 @@ esp_err_t Uart::SetStopBits(UartStopBits stopBits) {
   auto iterator = stopBitsMap.find(stopBits);
   ESP_RETURN_ON_FALSE(iterator != stopBitsMap.end(), ESP_ERR_INVALID_ARG, TAG, "invalid stop bits (%d)", (int)stopBits);
   this->stopBits = stopBits;
-  ESP_RETURN_ON_ERROR(SetConfiguration(), TAG, "set configuration failed");
+  ESP_RETURN_ON_ERROR(ConfigureParameters(), TAG, "configure parameters failed");
   return ESP_OK;
 }
 
@@ -290,7 +308,7 @@ esp_err_t Uart::SetFlowControl(UartFlowControl flowControl) {
   auto iterator = flowControlMap.find(flowControl);
   ESP_RETURN_ON_FALSE(iterator != flowControlMap.end(), ESP_ERR_INVALID_ARG, TAG, "invalid flow control (%d)", (int)flowControl);
   this->flowControl = flowControl;
-  ESP_RETURN_ON_ERROR(SetConfiguration(), TAG, "set configuration failed");
+  ESP_RETURN_ON_ERROR(ConfigureParameters(), TAG, "configure parameters failed");
   return ESP_OK;
 }
 
@@ -305,7 +323,7 @@ esp_err_t Uart::SetMode(uart_mode_t mode) {
 
 //==============================================================================
 
-esp_err_t Uart::SetConfiguration() {
+esp_err_t Uart::ConfigureParameters() {
   LockGuard lg(*this);
   uart_config_t config = {};
   config.baud_rate = baudRate;
@@ -315,7 +333,26 @@ esp_err_t Uart::SetConfiguration() {
   config.flow_ctrl = flowControlMap.find(flowControl)->second;
   config.source_clk = UART_SCLK_DEFAULT;
   
-  ESP_RETURN_ON_ERROR(uart_param_config(port, &config), TAG, "set parameters failed");
+  ESP_RETURN_ON_ERROR(uart_param_config(port, &config), TAG, "parameter configuration failed");
+  return ESP_OK;
+}
+
+//==============================================================================
+
+esp_err_t Uart::ConfigureInterrupts() {
+  // Configure RX timeout threshold and RX FIFO full threshold to be
+  // (half FreeRTOS tick time / time of sending one byte).
+  // Otherwise small read timeouts are not possible since uart_get_buffered_data_len does not show new data
+  // for a long time while it's still in FIFO.
+
+  uint8_t rxThreshold = std::max((uint32_t)1, std::min((uint32_t)maxRxFifoFullThreshold, baudRate * portTICK_PERIOD_MS / 8 / 1000 / 2));
+  
+  uart_intr_config_t config = {};
+  config.intr_enable_mask = UART_INTR_CONFIG_FLAG;
+  config.rx_timeout_thresh = rxThreshold;
+  config.txfifo_empty_intr_thresh = defaultTxFifoEmptyThreshold;
+  config.rxfifo_full_thresh = rxThreshold;
+  ESP_RETURN_ON_ERROR(uart_intr_config(port, &config), TAG, "interrupt configuration failed");
   return ESP_OK;
 }
 

@@ -31,6 +31,10 @@ public:
   static constexpr UartFlowControl defaultFlowControl = UartFlowControl::none;
   /// @brief Default mode
   static constexpr uart_mode_t defaultMode = UART_MODE_UART;
+  /// @brief Maximum RX FIFO full threshold
+  static constexpr uint8_t maxRxFifoFullThreshold = 120;
+  /// @brief Default TX FIFO empty threshold
+  static constexpr uint8_t defaultTxFifoEmptyThreshold = 10;
 
   /// @brief Creates an UART
   /// @param port port number
@@ -145,7 +149,8 @@ private:
   UartFlowControl flowControl = defaultFlowControl;
   uart_mode_t mode = defaultMode;
 
-  esp_err_t SetConfiguration();
+  esp_err_t ConfigureParameters();
+  esp_err_t ConfigureInterrupts();
 };
 
 //==============================================================================
