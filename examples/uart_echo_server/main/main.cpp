@@ -5,6 +5,7 @@
 class UartEchoServer : public PL::StreamServer {
 public:
   using PL::StreamServer::StreamServer;
+  ~UartEchoServer();
 
 protected:
   esp_err_t HandleRequest(PL::Stream& stream) override;
@@ -29,6 +30,12 @@ extern "C" void app_main(void) {
   while (1) {
     vTaskDelay(1);
   }
+}
+
+//==============================================================================
+
+UartEchoServer::~UartEchoServer() {
+  StopTask();
 }
 
 //==============================================================================

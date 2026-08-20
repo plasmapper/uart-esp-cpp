@@ -65,6 +65,12 @@ void TestUartServer() {
 
 //==============================================================================
 
+UartServer::~UartServer() {
+  StopTask();
+}
+
+//==============================================================================
+
 esp_err_t UartServer::HandleRequest(PL::Stream& stream) {
   ESP_RETURN_ON_ERROR(stream.Read(receivedData, sizeof(receivedData)), TAG, "port read failed");
   if (receivedData[0] == disableDataToSend[0])

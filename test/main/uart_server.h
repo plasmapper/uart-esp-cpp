@@ -5,6 +5,7 @@
 class UartServer : public PL::StreamServer {
 public:
   using PL::StreamServer::StreamServer;
+  ~UartServer();
   esp_err_t HandleRequest(PL::Stream& stream) override;
 };
 
