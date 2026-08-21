@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - uart_echo_server example and test server not stopping the server task before destruction.
+- Uart::SetMode not storing the mode.
 
 ## [1.3.1] - 2026-08-18
 ### Fixed

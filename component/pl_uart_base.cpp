@@ -317,6 +317,7 @@ esp_err_t Uart::SetFlowControl(UartFlowControl flowControl) {
 esp_err_t Uart::SetMode(uart_mode_t mode) {
   LockGuard lg(*this);
   ESP_RETURN_ON_FALSE(uart_is_driver_installed(port), ESP_ERR_INVALID_STATE, TAG, "uart port is not initialized");
+  this->mode = mode;
   ESP_RETURN_ON_ERROR(uart_set_mode(port, mode), TAG, "set mode failed");
   return ESP_OK;
 }
