@@ -15,4 +15,8 @@ extern "C" void app_main(void) {
 
   char testData[] = "Test\n";
   uart.Write(testData, sizeof(testData) - 1);
+
+  while (1) {
+    vTaskDelay(1);
+  }
 }

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2026-08-21
 ### Removed
 - Deprecated UartServer class.
 
@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Uart::SetMode not storing the mode.
 - Uart::SetBaudRate configuring interrupts before the driver is installed.
 - Uart dataBits member declared as int16_t instead of uint16_t.
+- uart example destroying the UART when app_main returns.
 
 ## [1.3.1] - 2026-08-18
 ### Fixed
