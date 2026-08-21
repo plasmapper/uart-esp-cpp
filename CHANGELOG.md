@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - uart_echo_server example and test server not stopping the server task before destruction.
 - Uart::SetMode not storing the mode.
 - Uart::SetBaudRate configuring interrupts before the driver is installed.
+- Uart dataBits member declared as int16_t instead of uint16_t.
 
 ## [1.3.1] - 2026-08-18
 ### Fixed

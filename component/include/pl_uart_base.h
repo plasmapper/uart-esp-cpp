@@ -143,7 +143,7 @@ private:
   bool enabled = false;
   TickType_t readTimeout = defaultReadTimeout;
   uint32_t baudRate = defaultBaudRate;
-  int16_t dataBits = defaultDataBits;
+  uint16_t dataBits = defaultDataBits;
   UartParity parity = defaultParity;
   UartStopBits stopBits = defaultStopBits;
   UartFlowControl flowControl = defaultFlowControl;
