@@ -236,7 +236,9 @@ esp_err_t Uart::SetBaudRate(uint32_t baudRate) {
   ESP_RETURN_ON_FALSE(baudRate, ESP_ERR_INVALID_ARG, TAG, "invalid baud rate (%lu)", baudRate);
   this->baudRate = baudRate;
   ESP_RETURN_ON_ERROR(ConfigureParameters(), TAG, "configure parameters failed");
-  ESP_RETURN_ON_ERROR(ConfigureInterrupts(), TAG, "configure interrupts failed");
+  if (uart_is_driver_installed(port)) {
+    ESP_RETURN_ON_ERROR(ConfigureInterrupts(), TAG, "configure interrupts failed");
+  }
   return ESP_OK;
 }
 
